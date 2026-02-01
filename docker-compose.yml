@@ -1,1 +1,21 @@
-TODO
+services:
+  external-service:
+    build: ./external-service
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/enrichment?userId=1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  api-service:
+    build: ./api-service
+    ports:
+      - "8080:8080"
+    environment:
+      - EXTERNAL_BASE_URL=http://external-service:8081
+    depends_on:
+      external-service:
+        condition: service_healthy
