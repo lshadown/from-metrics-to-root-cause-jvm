@@ -1,0 +1,89 @@
+# =========================
+# Java / JVM
+# =========================
+*.class
+*.log
+*.ctxt
+*.jar
+*.war
+*.ear
+*.nar
+
+# JVM crash logs
+hs_err_pid*
+
+# =========================
+# Maven
+# =========================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# =========================
+# Gradle
+# =========================
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# =========================
+# Spring Boot
+# =========================
+# application configs (override locally)
+application-local.yml
+application-local.yaml
+application-dev.yml
+application-dev.yaml
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# IDEs
+# =========================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse / STS
+.project
+.classpath
+.settings/
+
+# =========================
+# OS files
+# =========================
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# =========================
+# Docker
+# =========================
+# local docker volumes / temp files
+docker-data/
+.env
+
+# =========================
+# Misc
+# =========================
+*.swp
+*.swo
+*~
