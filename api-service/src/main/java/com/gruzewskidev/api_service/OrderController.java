@@ -24,8 +24,6 @@ public class OrderController {
 	@GetMapping("/orders")
 	public OrderResponse getOrders(@RequestParam long userId,
 								   @RequestParam(defaultValue = "false") boolean details) {
-		log.info("userId={} details={}", userId, details);
-
 		EnrichmentResponse enrichment = null;
 		if (details) {
 			enrichment = enrichmentCacheService.getEnrichment(userId);

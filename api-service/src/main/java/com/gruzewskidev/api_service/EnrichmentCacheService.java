@@ -19,7 +19,7 @@ public class EnrichmentCacheService {
 	private static final Logger log = LoggerFactory.getLogger(EnrichmentCacheService.class);
 
 	private static final Duration PREMIUM_TTL = Duration.ofSeconds(5);
-	private static final Duration STANDARD_TTL = Duration.ofSeconds(60);
+	private static final Duration STANDARD_TTL = Duration.ofSeconds(10);
 
 	private final ConcurrentHashMap<Long, CachedEnrichment> cache = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<Long, ReentrantLock> locks = new ConcurrentHashMap<>();
@@ -106,7 +106,6 @@ public class EnrichmentCacheService {
 			return response;
 		} finally {
 			lock.unlock();
-			// Best-effort cleanup: remove lock entry if cache is fresh
 			CachedEnrichment current = cache.get(userId);
 			if (current != null && !current.isExpired()) {
 				locks.remove(userId, lock);

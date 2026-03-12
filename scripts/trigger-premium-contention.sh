@@ -3,18 +3,18 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-USER_ID="${USER_ID:-40}"
+USER_ID="${USER_ID:-41}"
 CONCURRENCY="${CONCURRENCY:-10}"
 BASE_URL="${BASE_URL:-http://localhost:8080}"
 TTL_WAIT="${TTL_WAIT:-6}"
 
-# Fail-fast: verify api-service is reachable
+
 if ! curl -fsS -o /dev/null "${BASE_URL}/orders?userId=41" 2>/dev/null; then
   echo "ERROR: api-service is not reachable at ${BASE_URL}. Start api-service and try again."
   exit 1
 fi
 
-URL="${BASE_URL}/orders?userId=${USER_ID}&details=true"
+URL="${BASE_URL}/orders?userId=${USER_ID}&details=false"
 
 echo "=== Premium contention trigger ==="
 echo "userId=${USER_ID}  concurrency=${CONCURRENCY}  base=${BASE_URL}"
