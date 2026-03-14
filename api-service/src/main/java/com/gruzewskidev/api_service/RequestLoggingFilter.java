@@ -22,13 +22,18 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         try {
             chain.doFilter(request, response);
         } finally {
-            long durationMs = (System.nanoTime() - startNs) / 1_000_000;
-            log.info("http_in method={} path={} status={} durationMs={} query={}",
-                    request.getMethod(),
-                    request.getRequestURI(),
-                    response.getStatus(),
-                    durationMs,
-                    request.getQueryString());
+            if (request.getRequestURI().startsWith("/actuator")) {
+                chain.doFilter(request, response);
+                return;
+            }else {
+                long durationMs = (System.nanoTime() - startNs) / 1_000_000;
+                log.info("http_in method={} path={} status={} durationMs={} query={}",
+                        request.getMethod(),
+                        request.getRequestURI(),
+                        response.getStatus(),
+                        durationMs,
+                        request.getQueryString());
+            }
         }
     }
 }

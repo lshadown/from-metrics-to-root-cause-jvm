@@ -85,7 +85,6 @@ public class EnrichmentCacheService {
 			(isPremium ? lockWaitPremium : lockWaitStandard).record(lockWaitNanos, TimeUnit.NANOSECONDS);
 			log.info("userId={} lockWaitMs={}", userId, lockWaitMs);
 
-			// Double-check after acquiring lock
 			cached = cache.get(userId);
 			if (cached != null && !cached.isExpired()) {
 				log.info("userId={} cache_hit=true (after lock)", userId);
