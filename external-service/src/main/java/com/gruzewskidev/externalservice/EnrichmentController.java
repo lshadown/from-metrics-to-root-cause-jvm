@@ -24,7 +24,7 @@ public class EnrichmentController {
 			Thread.currentThread().interrupt();
 		}
 
-		log.info("userId={} segment={} sleepMs={}", userId, segment, sleepMs);
+		log.info("db_query_duration_ms={} userId={} segment={}",sleepMs, userId, segment);
 
 		return new EnrichmentResponse(userId, segment, riskScore);
 	}
