@@ -12,6 +12,10 @@ scrape_configs:
     static_configs:
       - targets: ["external-service:8081"]
 
+  - job_name: "caddy"
+    static_configs:
+      - targets: ["caddy:9180"]
+
   - job_name: "prometheus"
     static_configs:
       - targets: ["prometheus:9090"]

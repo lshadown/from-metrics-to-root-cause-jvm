@@ -9,6 +9,8 @@ Demo project: from metrics to root cause in a JVM microservice setup.
 | api-service | 8080 | Main API with `/orders` endpoint, enrichment cache with per-user locking |
 | external-service | 8081 | Downstream enrichment service with deterministic latency |
 
+Server deployment: see [DEPLOY.md](DEPLOY.md).
+
 ## Quick start (Docker)
 
 ```bash

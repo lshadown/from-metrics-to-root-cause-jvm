@@ -1,10 +1,31 @@
 services:
     # =========================
+    # Reverse proxy: Caddy (TLS)
+    # =========================
+    caddy:
+      image: caddy:2
+      container_name: caddy
+      restart: unless-stopped
+      ports:
+        - "80:80"
+        - "443:443"
+      environment:
+        - DEMO_AUTH_HASH=${DEMO_AUTH_HASH}
+      volumes:
+        - ./observability/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+        - caddy_data:/data
+        - caddy_config:/config
+      depends_on:
+        - api-service
+        - external-service
+
+    # =========================
     # Metrics: Prometheus
     # =========================
     prometheus:
       image: prom/prometheus:latest
       container_name: prometheus
+      restart: unless-stopped
       ports:
         - "9090:9090"
       volumes:
@@ -21,74 +42,50 @@ services:
     grafana:
       image: grafana/grafana:latest
       container_name: grafana
+      restart: unless-stopped
       ports:
         - "3000:3000"
       environment:
         - GF_SECURITY_ADMIN_USER=admin
-        - GF_SECURITY_ADMIN_PASSWORD=admin
+        - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+        - GF_SERVER_ROOT_URL=https://grafana.gruzewski.dev
+        - GF_AUTH_ANONYMOUS_ENABLED=true
+        - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      volumes:
+        - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+        - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
       depends_on:
         - prometheus
+        - loki
 
     # =========================
-    # Logs: Elasticsearch
+    # Logs: Loki
     # =========================
-    elasticsearch:
-      image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
-      container_name: elasticsearch
-      environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.security.enrollment.enabled=false
-      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+    loki:
+      image: grafana/loki:3.4.1
+      container_name: loki
+      restart: unless-stopped
+      command:
+        - -config.file=/etc/loki/local-config.yaml
       ports:
-        - "9200:9200"
+        - "3100:3100"
       volumes:
-        - esdata:/usr/share/elasticsearch/data
+        - lokidata:/loki
 
     # =========================
-    # Logs: Kibana
+    # Logs: Promtail (ships docker logs -> Loki)
     # =========================
-    kibana:
-      image: docker.elastic.co/kibana/kibana:8.14.3
-      container_name: kibana
-      environment:
-        - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-        - XPACK_SECURITY_ENABLED=false
-      ports:
-        - "5601:5601"
-      depends_on:
-        - elasticsearch
-
-    # =========================
-    # Logs: Logstash (ingest)
-    # =========================
-    logstash:
-      image: docker.elastic.co/logstash/logstash:8.14.3
-      container_name: logstash
-      environment:
-        - xpack.monitoring.enabled=false
-        - LS_JAVA_OPTS=-Xms128m -Xmx128m
-      ports:
-        - "5044:5044"   # Beats input
-        - "9600:9600"   # Logstash monitoring API
+    promtail:
+      image: grafana/promtail:3.4.1
+      container_name: promtail
+      restart: unless-stopped
+      command:
+        - -config.file=/etc/promtail/promtail.yml
       volumes:
-        - ./observability/logstash/pipeline:/usr/share/logstash/pipeline:ro
-      depends_on:
-        - elasticsearch
-
-    # =========================
-    # Logs: Filebeat (ships docker logs -> Logstash)
-    # =========================
-    filebeat:
-      image: docker.elastic.co/beats/filebeat:8.14.3
-      container_name: filebeat
-      user: root
-      volumes:
-        - ./observability/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-        - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        - ./observability/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
         - /var/run/docker.sock:/var/run/docker.sock:ro
       depends_on:
-        - logstash
+        - loki
 
     # =========================
     # Tracing: Zipkin
@@ -96,12 +93,17 @@ services:
     zipkin:
       image: openzipkin/zipkin:latest
       container_name: zipkin
+      restart: unless-stopped
       ports:
         - "9411:9411"
     external-service:
       build: ./external-service
+      restart: unless-stopped
       ports:
         - "8081:8081"
+      environment:
+        - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://zipkin:9411/v1/traces
+        - MANAGEMENT_TRACING_SAMPLING_PROBABILITY=1.0
       healthcheck:
         test: ["CMD", "curl", "-f", "http://localhost:8081/enrichment?userId=1"]
         interval: 5s
@@ -111,12 +113,17 @@ services:
 
     api-service:
       build: ./api-service
+      restart: unless-stopped
       ports:
         - "8080:8080"
       environment:
         - EXTERNAL_BASE_URL=http://external-service:8081
+        - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://zipkin:9411/v1/traces
+        - MANAGEMENT_TRACING_SAMPLING_PROBABILITY=1.0
       depends_on:
         external-service:
           condition: service_healthy
 volumes:
-  esdata:
+  lokidata:
+  caddy_data:
+  caddy_config:
