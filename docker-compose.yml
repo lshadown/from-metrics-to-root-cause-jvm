@@ -94,9 +94,12 @@ services:
       image: openzipkin/zipkin:latest
       container_name: zipkin
       restart: unless-stopped
+      environment:
+        - JAVA_OPTS=-Xms128m -Xmx256m
       ports:
         - "9411:9411"
     external-service:
+      image: ghcr.io/lshadown/from-metrics-to-root-cause-jvm/external-service:latest
       build: ./external-service
       restart: unless-stopped
       ports:
@@ -104,6 +107,7 @@ services:
       environment:
         - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://zipkin:9411/v1/traces
         - MANAGEMENT_TRACING_SAMPLING_PROBABILITY=1.0
+        - JAVA_TOOL_OPTIONS=-Xmx512m
       healthcheck:
         test: ["CMD", "curl", "-f", "http://localhost:8081/enrichment?userId=1"]
         interval: 5s
@@ -112,6 +116,7 @@ services:
         start_period: 15s
 
     api-service:
+      image: ghcr.io/lshadown/from-metrics-to-root-cause-jvm/api-service:latest
       build: ./api-service
       restart: unless-stopped
       ports:
@@ -120,6 +125,7 @@ services:
         - EXTERNAL_BASE_URL=http://external-service:8081
         - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://zipkin:9411/v1/traces
         - MANAGEMENT_TRACING_SAMPLING_PROBABILITY=1.0
+        - JAVA_TOOL_OPTIONS=-Xmx512m
       depends_on:
         external-service:
           condition: service_healthy
