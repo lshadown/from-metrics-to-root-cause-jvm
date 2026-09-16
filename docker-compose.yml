@@ -9,8 +9,6 @@ services:
       ports:
         - "80:80"
         - "443:443"
-      environment:
-        - DEMO_AUTH_HASH=${DEMO_AUTH_HASH}
       volumes:
         - ./observability/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
         - caddy_data:/data
@@ -88,16 +86,19 @@ services:
         - loki
 
     # =========================
-    # Tracing: Zipkin
+    # Tracing: Tempo
     # =========================
-    zipkin:
-      image: ghcr.io/openzipkin-contrib/zipkin-otel:0.3.0
-      container_name: zipkin
+    tempo:
+      image: grafana/tempo:2.10.8
+      container_name: tempo
       restart: unless-stopped
-      environment:
-        - JAVA_OPTS=-Xms128m -Xmx256m
+      command:
+        - -config.file=/etc/tempo/tempo.yml
       ports:
-        - "9411:9411"
+        - "3200:3200"
+      volumes:
+        - ./observability/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+        - tempodata:/var/tempo
     external-service:
       image: ghcr.io/lshadown/from-metrics-to-root-cause-jvm/external-service:latest
       build: ./external-service
@@ -106,7 +107,7 @@ services:
         - "8081:8081"
       environment:
         - SERVER_PORT=8081
-        - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://zipkin:9411/v1/traces
+        - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://tempo:4318/v1/traces
         - MANAGEMENT_TRACING_SAMPLING_PROBABILITY=1.0
         - JAVA_TOOL_OPTIONS=-Xmx512m
       healthcheck:
@@ -124,7 +125,7 @@ services:
         - "8080:8080"
       environment:
         - EXTERNAL_BASE_URL=http://external-service:8081
-        - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://zipkin:9411/v1/traces
+        - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://tempo:4318/v1/traces
         - MANAGEMENT_TRACING_SAMPLING_PROBABILITY=1.0
         - JAVA_TOOL_OPTIONS=-Xmx512m
       depends_on:
@@ -132,5 +133,6 @@ services:
           condition: service_healthy
 volumes:
   lokidata:
+  tempodata:
   caddy_data:
   caddy_config:

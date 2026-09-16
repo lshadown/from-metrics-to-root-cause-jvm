@@ -18,13 +18,6 @@ grafana.gruzewski.dev {
 	reverse_proxy grafana:3000
 }
 
-zipkin.gruzewski.dev {
-	basic_auth {
-		demo {$DEMO_AUTH_HASH}
-	}
-	reverse_proxy zipkin:9411
-}
-
 http://:9180 {
 	metrics /metrics
 }

@@ -20,10 +20,16 @@ datasources:
         - name: traceId
           matcherRegex: '"traceId":"(\w+)"'
           url: "$${__value.raw}"
-          datasourceUid: zipkin
+          datasourceUid: tempo
 
-  - name: Zipkin
-    uid: zipkin
-    type: zipkin
+  - name: Tempo
+    uid: tempo
+    type: tempo
     access: proxy
-    url: http://zipkin:9411
+    url: http://tempo:3200
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: "-5m"
+        spanEndTimeShift: "5m"
+        filterByTraceID: true
