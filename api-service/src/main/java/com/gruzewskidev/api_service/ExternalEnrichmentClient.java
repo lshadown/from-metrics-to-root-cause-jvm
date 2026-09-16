@@ -14,8 +14,9 @@ public class ExternalEnrichmentClient {
 
 	private final RestClient restClient;
 
-	public ExternalEnrichmentClient(@Value("${external.base-url}") String baseUrl) {
-		this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+	public ExternalEnrichmentClient(RestClient.Builder restClientBuilder,
+									@Value("${external.base-url}") String baseUrl) {
+		this.restClient = restClientBuilder.baseUrl(baseUrl).build();
 	}
 
 	public EnrichmentResponse getEnrichment(long userId) {
