@@ -30,6 +30,7 @@ services:
         - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       command:
         - --config.file=/etc/prometheus/prometheus.yml
+        - --web.enable-remote-write-receiver
       depends_on:
         - api-service
         - external-service

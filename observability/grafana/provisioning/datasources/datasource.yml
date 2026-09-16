@@ -33,3 +33,5 @@ datasources:
         spanStartTimeShift: "-5m"
         spanEndTimeShift: "5m"
         filterByTraceID: true
+      serviceMap:
+        datasourceUid: prometheus
