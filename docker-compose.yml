@@ -91,7 +91,7 @@ services:
     # Tracing: Zipkin
     # =========================
     zipkin:
-      image: openzipkin/zipkin:latest
+      image: ghcr.io/openzipkin-contrib/zipkin-otel:0.3.0
       container_name: zipkin
       restart: unless-stopped
       environment:
