@@ -105,6 +105,7 @@ services:
       ports:
         - "8081:8081"
       environment:
+        - SERVER_PORT=8081
         - MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT=http://zipkin:9411/v1/traces
         - MANAGEMENT_TRACING_SAMPLING_PROBABILITY=1.0
         - JAVA_TOOL_OPTIONS=-Xmx512m
