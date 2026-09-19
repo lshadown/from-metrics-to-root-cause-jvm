@@ -8,7 +8,7 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.util.logging.Logger;
+import static net.logstash.logback.argument.StructuredArguments.kv;
 
 @Slf4j
 @Component
@@ -27,12 +27,12 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
                 return;
             }else {
                 long durationMs = (System.nanoTime() - startNs) / 1_000_000;
-                log.info("http_in method={} path={} status={} durationMs={} query={}",
-                        request.getMethod(),
-                        request.getRequestURI(),
-                        response.getStatus(),
-                        durationMs,
-                        request.getQueryString());
+                log.info("http_in",
+                        kv("method", request.getMethod()),
+                        kv("path", request.getRequestURI()),
+                        kv("status", response.getStatus()),
+                        kv("durationMs", durationMs),
+                        kv("query", request.getQueryString()));
             }
         }
     }

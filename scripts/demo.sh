@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export LC_ALL=C
 
 BASE_URL="${BASE_URL:-https://demo-a.gruzewski.dev}"
 BASELINE_RPS="${BASELINE_RPS:-5}"

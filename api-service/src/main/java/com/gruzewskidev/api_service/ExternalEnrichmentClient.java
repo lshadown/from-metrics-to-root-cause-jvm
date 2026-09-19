@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 @Service
 public class ExternalEnrichmentClient {
 
@@ -27,11 +29,11 @@ public class ExternalEnrichmentClient {
 					.retrieve()
 					.body(EnrichmentResponse.class);
 			long duration = System.currentTimeMillis() - start;
-			log.info("Downstream enrichment call userId={} durationMs={}", userId, duration);
+			log.info("Downstream enrichment call", kv("userId", userId), kv("durationMs", duration));
 			return response;
 		} catch (RestClientException e) {
 			long duration = System.currentTimeMillis() - start;
-			log.error("Downstream enrichment call failed userId={} durationMs={}", userId, duration, e);
+			log.error("Downstream enrichment call failed", kv("userId", userId), kv("durationMs", duration), e);
 			throw new DownstreamException("Enrichment service unavailable", e);
 		}
 	}

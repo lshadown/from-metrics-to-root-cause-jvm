@@ -149,10 +149,79 @@
       ]
     },
     {
+      "id": 10,
+      "type": "row",
+      "title": "api-service internals (enrichment)",
+      "collapsed": true,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "panels": [
+        {
+          "id": 11,
+          "type": "timeseries",
+          "title": "Enrichment cache hit/miss",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 33 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (userType) (rate(demo_enrichment_cache_hit_total[30s]))",
+              "legendFormat": "hit {{userType}}"
+            },
+            {
+              "refId": "B",
+              "expr": "sum by (userType) (rate(demo_enrichment_cache_miss_total[30s]))",
+              "legendFormat": "miss {{userType}}"
+            }
+          ]
+        },
+        {
+          "id": 12,
+          "type": "timeseries",
+          "title": "Enrichment lock wait",
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 33 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max by (userType) (demo_enrichment_lock_wait_seconds_max)",
+              "legendFormat": "max {{userType}}"
+            },
+            {
+              "refId": "B",
+              "expr": "sum by (userType) (rate(demo_enrichment_lock_wait_seconds_sum[1m])) / sum by (userType) (rate(demo_enrichment_lock_wait_seconds_count[1m]))",
+              "legendFormat": "avg {{userType}}"
+            }
+          ]
+        },
+        {
+          "id": 13,
+          "type": "timeseries",
+          "title": "Enrichment refresh duration",
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 33 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max by (userType) (demo_enrichment_refresh_seconds_max)",
+              "legendFormat": "max {{userType}}"
+            },
+            {
+              "refId": "B",
+              "expr": "sum by (userType) (rate(demo_enrichment_refresh_seconds_sum[1m])) / sum by (userType) (rate(demo_enrichment_refresh_seconds_count[1m]))",
+              "legendFormat": "avg {{userType}}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": 9,
       "type": "logs",
       "title": "Application logs",
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 32 },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 41 },
       "datasource": { "type": "loki", "uid": "loki" },
       "options": {
         "showTime": true,

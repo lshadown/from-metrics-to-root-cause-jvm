@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 @Service
 public class EnrichmentCacheService {
 
@@ -66,10 +68,11 @@ public class EnrichmentCacheService {
 
 	public EnrichmentResponse getEnrichment(long userId) {
 		boolean isPremium = userId % 20 == 0;
+		String userType = isPremium ? "premium" : "standard";
 
 		CachedEnrichment cached = cache.get(userId);
 		if (cached != null && !cached.isExpired()) {
-			log.info("userId={} cache_hit=true", userId);
+			log.info("cache hit", kv("userId", userId), kv("userType", userType), kv("cache_hit", true));
 			(isPremium ? cacheHitPremium : cacheHitStandard).increment();
 			return cached.value();
 		}
@@ -83,11 +86,12 @@ public class EnrichmentCacheService {
 			long lockWaitNanos = System.nanoTime() - lockWaitStart;
 			long lockWaitMs = TimeUnit.NANOSECONDS.toMillis(lockWaitNanos);
 			(isPremium ? lockWaitPremium : lockWaitStandard).record(lockWaitNanos, TimeUnit.NANOSECONDS);
-			log.info("userId={} lockWaitMs={}", userId, lockWaitMs);
+			log.info("lock acquired", kv("userId", userId), kv("userType", userType), kv("lockWaitMs", lockWaitMs));
 
 			cached = cache.get(userId);
 			if (cached != null && !cached.isExpired()) {
-				log.info("userId={} cache_hit=true (after lock)", userId);
+				log.info("cache hit after lock", kv("userId", userId), kv("userType", userType),
+						kv("cache_hit", true), kv("after_lock", true), kv("lockWaitMs", lockWaitMs));
 				return cached.value();
 			}
 
@@ -101,7 +105,8 @@ public class EnrichmentCacheService {
 			long refreshMs = TimeUnit.NANOSECONDS.toMillis(refreshNanos);
 			(isPremium ? refreshPremium : refreshStandard).record(refreshNanos, TimeUnit.NANOSECONDS);
 
-			log.info("userId={} cache_refresh=true refreshMs={} ttl={}", userId, refreshMs, ttl);
+			log.info("cache refreshed", kv("userId", userId), kv("userType", userType),
+					kv("cache_refresh", true), kv("refreshMs", refreshMs), kv("ttl", ttl.toString()));
 			return response;
 		} finally {
 			lock.unlock();

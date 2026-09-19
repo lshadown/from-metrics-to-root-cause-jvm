@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 @RestController
 public class EnrichmentController {
 
@@ -24,7 +26,7 @@ public class EnrichmentController {
 			Thread.currentThread().interrupt();
 		}
 
-		log.info("db_query_duration_ms={} userId={} segment={}",sleepMs, userId, segment);
+		log.info("db query", kv("db_query_duration_ms", sleepMs), kv("userId", userId), kv("segment", segment));
 
 		return new EnrichmentResponse(userId, segment, riskScore);
 	}
